@@ -11,6 +11,7 @@ from alien import Alien
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
+    
     def __init__(self):
         """Initialize the game, and create game resources."""
         pygame.init()
@@ -51,6 +52,14 @@ class AlienInvasion:
             self.bullets.empty()
             self._create_fleet()
 
+    def _check_aliens_bottom(self):
+        """Check if any aliens have reached the bottom of the screen."""
+        screen_rect = self.screen.get_rect()
+        for alien in self.aliens.sprites():
+            # Treat this the same way as if a ship got hit.
+            self._ship_hit()
+            break
+
 
     def _update_aliens(self):
         """
@@ -64,30 +73,40 @@ class AlienInvasion:
         if pygame.sprite.spritecollideany(self.ship, self.aliens):
             self._ship_hit()
 
+        # Look for aliens hitting the bottom of screen.
+        self._check_aliens_bottom()
+
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
 
-        # Decrement ships_left.
-        self.stats.ships_left -= 1
+        if self.stats.ships_left > 0:
+            # Decrement ships_left.
+            self.stats.ships_left -= 1
 
-        # Get rid of any remaining aliens and bullets.
-        self.aliens.empty()
-        self.bullets.empty()
+            # Get rid of any remaining aliens and bullets.
+            self.aliens.empty()
+            self.bullets.empty()
 
-        # Create a new fleet and center ship.
-        self._create_fleet()
-        self.ship.center_ship()
+            # Create a new fleet and center ship.
+            self._create_fleet()
+            self.ship.center_ship()
 
-        # Pause
-        sleep(0.5)
+            # Pause
+            sleep(0.5)
+
+        else:
+            self.stats.game_active = False
 
     def run_game(self):
         """Start the main loop for the game."""
         while True:
             self._check_events()
-            self.ship.update()
-            self._update_bullets()
-            self._update_aliens()
+
+            if self.stats.game_active:
+                self.ship.update()
+                self._update_bullets()
+                self._update_aliens()
+            
             self._update_screen()
 
             # Redraw the screen during each pass through the loop.
