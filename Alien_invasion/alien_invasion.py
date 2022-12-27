@@ -11,7 +11,7 @@ from alien import Alien
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
-    
+
     def __init__(self):
         """Initialize the game, and create game resources."""
         pygame.init()
@@ -52,15 +52,6 @@ class AlienInvasion:
             self.bullets.empty()
             self._create_fleet()
 
-    def _check_aliens_bottom(self):
-        """Check if any aliens have reached the bottom of the screen."""
-        screen_rect = self.screen.get_rect()
-        for alien in self.aliens.sprites():
-            # Treat this the same way as if a ship got hit.
-            self._ship_hit()
-            break
-
-
     def _update_aliens(self):
         """
         Check if the fleet is at an edge, 
@@ -76,11 +67,21 @@ class AlienInvasion:
         # Look for aliens hitting the bottom of screen.
         self._check_aliens_bottom()
 
+    def _check_aliens_bottom(self):
+        """Check if any aliens have reached the bottom of the screen."""
+        screen_rect = self.screen.get_rect()
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= screen_rect.bottom:
+                # Treat this the  same way as if a ship got hit.
+                self._ship_hit()
+                break
+
+
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
 
         if self.stats.ships_left > 0:
-            # Decrement ships_left.
+            # Decrement ships_left
             self.stats.ships_left -= 1
 
             # Get rid of any remaining aliens and bullets.
