@@ -53,6 +53,13 @@ class AlienInvasion:
         """Respond to bullet alien collisions."""
         # Remove any bullets and aliens that have collided.
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        
+        if collisions:
+            self.stats.score += self.settings.alien_points
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.sb.prep_score()
+        
         if not self.aliens:
             # Destroy existing bullets and create new fleet.
             self.bullets.empty()
@@ -82,7 +89,6 @@ class AlienInvasion:
                 # Treat this the  same way as if a ship got hit.
                 self._ship_hit()
                 break
-
 
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
@@ -143,6 +149,7 @@ class AlienInvasion:
             self.settings.initalize_dynamic_settings()
             self.stats.reset_stats()
             self.stats.game_active = True
+            self.sb.prep_score()
 
             # Hide the mouse cursor.
             pygame.mouse.set_visible(False)
@@ -163,8 +170,13 @@ class AlienInvasion:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
             sys.exit()
-        elif event.key == pygame.K_SPACE:
+        elif event.key == pygame.K_SPACE or event.key == pygame.K_UP:
             self._fire_bullet()
+        elif event.key == pygame.K_c:
+            self.aliens.empty()
+            self.bullets.empty()
+            self._create_fleet()
+            self.ship.center_ship()
     
     def _check_keyup_events(self, event):
         """Respond to key releases."""
@@ -228,6 +240,9 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+
+        # Draw the score information.
+        self.sb.show_score()
 
         # Draw the play button if the game is inactive.
         if not self.stats.game_active:
